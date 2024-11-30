@@ -59,6 +59,10 @@ func newConn(logger *slog.Logger, rwc net.Conn, factory Factory) *Conn {
 	}
 }
 
+func (c *Conn) Addr() net.Addr {
+	return c.rwc.RemoteAddr()
+}
+
 func (c *Conn) serve() error {
 	defer c.rwc.Close()
 
@@ -123,8 +127,6 @@ func (c *Conn) process(fields []string) error {
 		if err != nil {
 			return fmt.Errorf("%w: %w", ErrBadFormat, err)
 		}
-
-		c.logger.Debug("Put request", "pri", pri, "delay", delay, "ttr", ttr, "bytes", len(data))
 
 		id, buried, err := c.handler.Put(pri, delay, ttr, data)
 		if err != nil {
