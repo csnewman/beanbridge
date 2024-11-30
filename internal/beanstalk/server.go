@@ -4,12 +4,14 @@ import (
 	"fmt"
 	"log/slog"
 	"net"
+	"sync/atomic"
 )
 
 type Server struct {
-	logger   *slog.Logger
-	listener net.Listener
-	factory  Factory
+	logger       *slog.Logger
+	listener     net.Listener
+	factory      Factory
+	shuttingDown atomic.Bool
 }
 
 func NewServer(logger *slog.Logger, address string, factory Factory) (*Server, error) {
@@ -31,6 +33,10 @@ func (s *Server) Serve() error {
 	for {
 		rwc, err := s.listener.Accept()
 		if err != nil {
+			if s.shuttingDown.Load() {
+				return nil
+			}
+
 			return fmt.Errorf("failed to accept connection: %w", err)
 		}
 
@@ -42,4 +48,14 @@ func (s *Server) Serve() error {
 			}
 		}()
 	}
+}
+
+func (s *Server) Addr() net.Addr {
+	return s.listener.Addr()
+}
+
+func (s *Server) Close() {
+	s.shuttingDown.Store(true)
+
+	_ = s.listener.Close()
 }

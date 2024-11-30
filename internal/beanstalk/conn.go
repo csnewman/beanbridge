@@ -128,7 +128,9 @@ func (c *Conn) process(fields []string) error {
 
 		id, buried, err := c.handler.Put(pri, delay, ttr, data)
 		if err != nil {
-			return fmt.Errorf("failed to put: %w", err)
+			c.logger.Error("Put failed", "err", err)
+
+			return writeLine(c.rwc, resInternalError)
 		}
 
 		if buried {
@@ -144,7 +146,9 @@ func (c *Conn) process(fields []string) error {
 
 		tube, err := c.handler.Use(fields[1])
 		if err != nil {
-			return fmt.Errorf("failed to use: %w", err)
+			c.logger.Error("Use failed", "err", err)
+
+			return writeLine(c.rwc, resInternalError)
 		}
 
 		return writeLine(c.rwc, resUsing, tube)
@@ -182,7 +186,9 @@ func (c *Conn) process(fields []string) error {
 		} else if errors.Is(err, ErrDeadlineSoon) {
 			return writeLine(c.rwc, resDeadlineSoon)
 		} else if err != nil {
-			return fmt.Errorf("failed to reserve: %w", err)
+			c.logger.Error("Reserve failed", "err", err)
+
+			return writeLine(c.rwc, resInternalError)
 		}
 
 		return writeLine(c.rwc, resReserved, id, len(data), data)

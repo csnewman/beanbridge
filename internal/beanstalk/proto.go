@@ -23,6 +23,7 @@ const (
 	cmdWatch              = "watch"
 	cmdIgnore             = "ignore"
 	endLine               = "\r\n"
+	resInternalError      = "INTERNAL_ERROR" + endLine
 	resUnknownCommand     = "UNKNOWN_COMMAND" + endLine
 	resInserted           = "INSERTED %d" + endLine
 	resBuriedID           = "BURIED %d" + endLine
